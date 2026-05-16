@@ -81,23 +81,6 @@ class Asset(models.Model):
     def __str__(self):
         return f"{self.name} - {self.serial_number}"
 
-    def save(self, *args, **kwargs):
-        # Generate QR code after saving if it's a new instance to get the ID
-        if not self.id:
-            super().save(*args, **kwargs)
-            
-        if not self.qr_code:
-            # Using your local IP so your phone can access it on the same Wi-Fi
-            qr_image = qrcode.make(f"http://192.168.1.191:3000/asset/{self.id}")
-            canvas = BytesIO()
-            qr_image.save(canvas, format='PNG')
-            file_name = f'qr-{self.serial_number}.png'
-            self.qr_code.save(file_name, File(canvas), save=False)
-            # Save again to store the qr_code path, but don't force_insert this time
-            super().save(update_fields=['qr_code'])
-        else:
-            super().save(*args, **kwargs)
-
 class Assignment(models.Model):
     SHIFT_CHOICES = [
         ('Full-time', 'Full-time'),
